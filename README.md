@@ -41,8 +41,9 @@ From the same pre-shot state $s_t$, we generate many simulated alternatives and 
 Each simulated throw produces:
 
 $$
-\Delta xScore(x) = xScore\!\left(\operatorname{Sim}(s_t, x), \; c_{t+1}\right) - xScore(s_t, c_t).
+\Delta xScore(x) = xScore\!\left(\mathrm{Sim}(s_t, x),\; c_{t+1}\right) - xScore(s_t, c_t).
 $$
+
 
 ## Per-shot Metrics (Coach-facing)
 
