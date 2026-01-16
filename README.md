@@ -20,14 +20,14 @@ $$
 This provides a consistent value scale (curling’s analogue of expected points / xG-style models).
 
 ### 2) Reconstructing execution via simulation + inverse solving
-Observed datasets typically provide state transitions $(s_t \rightarrow s_{t+1})$, not the release parameters that caused them.
-We infer each shot’s executed release vector (speed, angle, spin/turn, lateral offset) by solving:
+Observed datasets typically provide state transitions $(s_t \rightarrow s_{t+1})$, not the release parameters that caused them.  
+We infer each shot’s executed release vector by solving:
 
 $$
-\hat{x}_t = \operatorname*{arg\,min}_x \; \mathcal{L}\!\left(\operatorname{Sim}(s_t, x), \; s_{t+1}\right),
+\hat{x}_t = \underset{x}{\mathrm{arg\,min}} \;\; \mathcal{L}\!\left(\mathrm{Sim}(s_t, x),\; s_{t+1}\right)
 $$
 
-where $\operatorname{Sim}$ is a physics simulator and $\mathcal{L}$ is an identity-agnostic layout loss that handles collisions, removals, and stone identity ambiguity.
+where $\mathrm{Sim}$ is a physics simulator and $\mathcal{L}$ is an identity-agnostic layout loss that handles collisions, removals, and stone identity ambiguity.
 In practice, the inverse problem is nonconvex, so we use a population-based optimizer (e.g., CEM-style) rather than relying on local gradients alone.
 
 ### 3) Counterfactual Monte Carlo for execution (local) vs decision (global)
