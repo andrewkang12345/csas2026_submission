@@ -11,44 +11,38 @@ The core idea is to evaluate each shot by comparing the observed outcome to **co
 ## Method Overview
 
 ### 1) `xScore`: expected end score differential for any board state
-We learn a state-value model `xScore(s, c)` that maps a static curling position (stone layout `s` plus context `c`, e.g., shot index / hammer) to:
+We learn a state-value model $xScore(s, c)$ that maps a static curling position (stone layout $s$ plus context $c$, e.g., shot index / hammer) to:
 
-\[
-\E[\text{end points (team)} - \text{end points (opponent)} \mid s, c].
-\]
+$$
+\mathbb{E}\left[\text{end points (team)} - \text{end points (opponent)} \mid s, c\right].
+$$
 
 This provides a consistent value scale (curling’s analogue of expected points / xG-style models).
 
 ### 2) Reconstructing execution via simulation + inverse solving
-Observed datasets typically provide **state transitions** `(s_t → s_{t+1})`, not the release parameters that caused them.  
-We infer each shot’s executed release vector:
+Observed datasets typically provide state transitions $(s_t \rightarrow s_{t+1})$, not the release parameters that caused them.
+We infer each shot’s executed release vector (speed, angle, spin/turn, lateral offset) by solving:
 
-- speed
-- angle
-- spin (turn)
-- lateral offset
+$$
+\hat{x}_t = \operatorname*{arg\,min}_x \; \mathcal{L}\!\left(\operatorname{Sim}(s_t, x), \; s_{t+1}\right),
+$$
 
-by solving:
-
-\[
-\hat{x}_t = \arg\min_x \mathcal{L}(\mathrm{Sim}(s_t, x), s_{t+1})
-\]
-
-where `Sim` is a physics simulator and `L` is an identity-agnostic layout loss that handles collisions, removals, and stone identity ambiguity. In practice, the inverse problem is nonconvex, so we use a population-based optimizer (e.g., CEM-style) rather than relying on local gradients alone.
+where $\operatorname{Sim}$ is a physics simulator and $\mathcal{L}$ is an identity-agnostic layout loss that handles collisions, removals, and stone identity ambiguity.
+In practice, the inverse problem is nonconvex, so we use a population-based optimizer (e.g., CEM-style) rather than relying on local gradients alone.
 
 ### 3) Counterfactual Monte Carlo for execution (local) vs decision (global)
-From the same pre-shot state `s_t`, we generate many simulated alternatives and score them with `xScore`:
+From the same pre-shot state $s_t$, we generate many simulated alternatives and score them with `xScore`:
 
-- **Local sampling:** small perturbations around the inferred executed release `\hat{x}_t`.  
-  This estimates *plan value under realistic execution noise* and *fragility*.
-- **Global sampling:** broad sampling across feasible releases.  
-  This approximates the “opportunity set” and supports *decision-quality* comparisons.
+- **Local sampling:** small perturbations around the inferred executed release $\hat{x}_t$.
+  Estimates plan value under realistic execution noise and fragility.
+- **Global sampling:** broad sampling across feasible releases.
+  Approximates the opportunity set and supports decision-quality comparisons.
 
 Each simulated throw produces:
 
-\[
-\Delta xScore(x) = xScore(\mathrm{Sim}(s_t, x), c_{t+1}) - xScore(s_t, c_t).
-\]
+$$
+\Delta xScore(x) = xScore\!\left(\operatorname{Sim}(s_t, x), \; c_{t+1}\right) - xScore(s_t, c_t).
+$$
 
 ## Per-shot Metrics (Coach-facing)
 
@@ -77,8 +71,6 @@ This repository implements the pipeline described in **“Scoring the Intended S
    - **Local** sampling around the inferred throw to evaluate execution and fragility.
    - **Global** sampling across feasible throws to evaluate decision quality.
 4. Produces per-shot metrics (decision value/risk, execution surplus) and aggregates them into player/team analyses and figures.
-
-> Note: The script names below follow the canonical pipeline implied by the paper. If your repo uses different filenames, keep the descriptions and update the paths accordingly.
 
 ---
 
